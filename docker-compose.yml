@@ -1,0 +1,56 @@
+version: '3'
+
+services:
+  # Name of the service as Docker will reference.
+  webserver:
+    image: puckel/docker-airflow:latest
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      - LOAD_EX=n
+      - EXECUTOR=Local
+    volumes:
+      - ./dags:/usr/local/airflow/dags
+    ports:
+      - '8083:8080'
+      - '5555:5555'
+      - '8793:8793'
+    command: webserver
+    healthcheck:
+      test: ['CMD-SHELL', '[ -f /usr/local/airflow/airflow-webserver.pid ]']
+      interval: 30s
+      timeout: 30s
+      retries: 3
+  # scheduler:
+  #   image: puckel/docker-airflow:latest
+  #   restart: always
+  #   environment:
+  #     - LOAD_EX=n
+  #     - EXECUTOR=Local
+  #     - AIRFLOW__CORE__SQL_ALCHEMY_CONN=sqlite:////usr/local/airflow/db/airflow.db
+  #   depends_on:
+  #     - webserver
+  #   volumes:
+  #     - ./dags:/usr/local/airflow/dags
+  #     - ./db:/usr/local/airflow/db
+  #   command: scheduler
+  postgres:
+    image: postgres:11
+    container_name: 'postgres'
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      PGDATA: ${PGDATA}
+    ports:
+      - 5432:5432
+    volumes:
+      - pg_data:/data/postgres
+
+# if you use a named volume, you must also define it here.
+volumes:
+  pg_data:
+    driver: local

@@ -1,3 +1,9 @@
+# custom
+data/
+db/
+airflow_files/
+*.zip
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
